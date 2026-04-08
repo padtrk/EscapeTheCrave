@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Escape the Crave</title>
+<meta name="description" content="If you can ride out the urge for sixty seconds, you can beat it. A quiet moment to free yourself.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #0a1f12;
+    --green-mid: #1a3a24;
+    --green-soft: #2d5a3d;
+    --moss: #87a878;
+    --moss-bright: #a8c895;
+    --cream: #f4ead5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--green-deep);
+    color: var(--cream);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .screen {
+    position: fixed;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  .screen.active { display: flex; }
+
+  /* ============ LANDING ============ */
+  #landing {
+    background: radial-gradient(ellipse at top, var(--green-soft) 0%, var(--green-mid) 40%, var(--green-deep) 100%);
+  }
+  #landing::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(135,168,120,0.08) 0%, transparent 30%),
+      radial-gradient(circle at 80% 70%, rgba(135,168,120,0.06) 0%, transparent 35%),
+      radial-gradient(circle at 60% 20%, rgba(135,168,120,0.05) 0%, transparent 25%);
+    pointer-events: none;
+  }
+  .landing-inner { position: relative; z-index: 1; max-width: 640px; }
+  .eyebrow {
+    font-family: 'IM Fell English SC', 'IM Fell English', serif;
+    font-size: 15px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--moss);
+    margin-bottom: 28px;
+  }
+  h1 {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(56px, 10vw, 110px);
+    line-height: 1;
+    margin-bottom: 24px;
+    color: var(--cream);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+  }
+  .tagline {
+    font-family: 'IM Fell English', serif;
+    font-size: clamp(19px, 2.3vw, 26px);
+    line-height: 1.5;
+    max-width: 520px;
+    margin: 0 auto 14px;
+    opacity: 0.92;
+  }
+  .subtagline {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: clamp(15px, 1.6vw, 19px);
+    opacity: 0.7;
+    margin-bottom: 48px;
+  }
+  .start-btn {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 22px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--cream);
+    border: 1.5px solid var(--moss);
+    padding: 16px 46px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    border-radius: 1px;
+  }
+  .start-btn:hover {
+    background: var(--moss);
+    color: var(--green-deep);
+    transform: scale(1.03);
+  }
+  .footer-note {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    position: absolute;
+    bottom: 20px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 13px;
+    opacity: 0.45;
+    padding: 0 24px;
+  }
+
+  /* ============ EXPERIENCE ============ */
+  #experience { background: #000; }
+  #snakeCanvas {
+    display: block;
+    background: #000;
+  }
+
+  /* ============ COMPLETE ============ */
+  #complete {
+    background: radial-gradient(ellipse at center, var(--green-soft) 0%, var(--green-mid) 50%, var(--green-deep) 100%);
+  }
+  #complete h2 {
+    font-style: italic;
+    font-size: clamp(36px, 6vw, 64px);
+    margin-bottom: 18px;
+  }
+  #complete p {
+    font-size: clamp(17px, 2vw, 21px);
+    opacity: 0.8;
+    margin-bottom: 36px;
+    max-width: 480px;
+  }
+</style>
+</head>
+<body>
+
+  <section id="landing" class="screen active">
+    <div class="landing-inner">
+      <div class="eyebrow">A Quiet Moment</div>
+      <h1>Escape the Crave</h1>
+      <p class="tagline">If you can ride out the urge for sixty seconds, you can beat it.</p>
+      <p class="subtagline">Free yourself to be the true you.</p>
+      <button class="start-btn" onclick="begin()">Begin</button>
+    </div>
+    <div class="footer-note">Not a substitute for support. If you're struggling, please reach out to someone.</div>
+  </section>
+
+  <section id="experience" class="screen">
+    <canvas id="snakeCanvas" width="480" height="480"></canvas>
+  </section>
+
+  <section id="complete" class="screen">
+    <h2>The wave has passed.</h2>
+    <p>You did it. The craving was a wave, and you rode it out.</p>
+    <button class="start-btn" onclick="reset()">Again</button>
+  </section>
+
+<script>
+  // ===== Screen routing =====
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+  function begin() {
+    show('experience');
+    startSnake();
+    setTimeout(() => {
+      stopSnake();
+      show('complete');
+    }, 60000);
+  }
+  function reset() { show('landing'); }
+
+  // ===== Sparkler-trail snake (smooth, glowing, fading) =====
+  const canvas = document.getElementById('snakeCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Make canvas fill viewport, crisp on retina
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', sizeCanvas);
+
+  let head, vel, angle, rafId, running, stars, treeline;
+
+  function generateStars() {
+    stars = [];
+    const count = Math.floor((window.innerWidth * window.innerHeight) / 2200);
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight * 0.85, // mostly upper portion
+        r: Math.random() * 1.3 + 0.2,
+        baseAlpha: Math.random() * 0.7 + 0.3,
+        twinkleSpeed: Math.random() * 0.002 + 0.0008,
+        twinklePhase: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+
+  function generateTreeline() {
+    // Build a soft, rolling deciduous canopy — ancient broadleaf woodland
+    treeline = [];
+    const w = window.innerWidth;
+    const baseY = window.innerHeight;
+    let x = -50;
+    while (x <= w + 50) {
+      const canopyW = 90 + Math.random() * 180;
+      const canopyH = 70 + Math.random() * 130;
+      const trunkOffset = (Math.random() - 0.5) * 20;
+      const tree = {
+        cx: x + canopyW / 2,
+        topY: baseY - canopyH,
+        rx: canopyW / 2,
+        ry: canopyH * 0.75,
+        lean: trunkOffset,
+        leaves: [],
+      };
+      // Scatter leaf clusters within the canopy ellipse
+      const leafCount = Math.floor(canopyW * canopyH / 60);
+      for (let i = 0; i < leafCount; i++) {
+        // Random point within the upper half of the ellipse
+        const angle = Math.PI + Math.random() * Math.PI;
+        const r = Math.sqrt(Math.random());
+        const lx = Math.cos(angle) * tree.rx * r;
+        const ly = Math.sin(angle) * tree.ry * r;
+        tree.leaves.push({
+          x: lx,
+          y: ly,
+          size: Math.random() * 2.2 + 0.8,
+          shade: Math.random(),
+          rot: Math.random() * Math.PI,
+        });
+      }
+      treeline.push(tree);
+      x += canopyW * 0.55;
+    }
+  }
+
+  function drawBackground(t) {
+    // Deep night sky gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, window.innerHeight);
+    grad.addColorStop(0, '#02050d');
+    grad.addColorStop(0.5, '#070d1a');
+    grad.addColorStop(1, '#0a1410');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+    // Stars with gentle twinkle
+    for (const s of stars) {
+      const twinkle = Math.sin(t * s.twinkleSpeed + s.twinklePhase) * 0.3 + 0.7;
+      const alpha = s.baseAlpha * twinkle;
+      ctx.fillStyle = `rgba(255, 250, 230, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+      // Subtle glow on the brighter stars
+      if (s.r > 1) {
+        ctx.fillStyle = `rgba(255, 250, 230, ${alpha * 0.15})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Treeline silhouette — ancient deciduous canopy
+    ctx.fillStyle = '#0d1f12';
+    ctx.beginPath();
+    ctx.moveTo(-10, window.innerHeight);
+    ctx.lineTo(-10, window.innerHeight - 20);
+    for (const tree of treeline) {
+      // Draw upper half of an ellipse above the baseline
+      ctx.ellipse(
+        tree.cx + tree.lean,
+        window.innerHeight,
+        tree.rx,
+        tree.ry,
+        0,
+        Math.PI,        // start angle (left side of ellipse)
+        2 * Math.PI,    // end angle (right side), going clockwise across the top
+        false
+      );
+    }
+    ctx.lineTo(window.innerWidth + 10, window.innerHeight - 20);
+    ctx.lineTo(window.innerWidth + 10, window.innerHeight);
+    ctx.closePath();
+    ctx.fill();
+
+    // Soft mossy-green highlight along the canopy tops
+    ctx.strokeStyle = 'rgba(60, 110, 70, 0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    let first = true;
+    for (const tree of treeline) {
+      const steps = 20;
+      for (let i = 0; i <= steps; i++) {
+        const a = Math.PI + (i / steps) * Math.PI;
+        const px = tree.cx + tree.lean + Math.cos(a) * tree.rx;
+        const py = window.innerHeight + Math.sin(a) * tree.ry;
+        if (first) { ctx.moveTo(px, py); first = false; }
+        else ctx.lineTo(px, py);
+      }
+    }
+    ctx.stroke();
+
+    // Leaf texture — scatter small leaf shapes across each canopy
+    for (const tree of treeline) {
+      for (const leaf of tree.leaves) {
+        // Vary green by shade value
+        const greens = [
+          'rgba(40, 78, 48, 0.9)',
+          'rgba(55, 100, 60, 0.85)',
+          'rgba(72, 120, 75, 0.8)',
+          'rgba(95, 140, 90, 0.75)',
+          'rgba(115, 160, 105, 0.6)',
+        ];
+        ctx.fillStyle = greens[Math.floor(leaf.shade * greens.length)];
+        const px = tree.cx + tree.lean + leaf.x;
+        const py = window.innerHeight + leaf.y;
+        // Tiny oval leaf
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(leaf.rot);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, leaf.size, leaf.size * 0.55, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+  }
+
+  function initSnake() {
+    sizeCanvas();
+    generateStars();
+    generateTreeline();
+    head = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    angle = Math.random() * Math.PI * 2;
+    vel = 1.4;
+  }
+
+  function step() {
+    if (!running) return;
+    const t = Date.now();
+
+    // Gently meander
+    angle += (Math.random() - 0.5) * 0.08;
+
+    // Soft attraction back toward center so it never wanders off-screen
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight * 0.45; // slightly above middle so it stays in the sky
+    const toCenterX = cx - head.x;
+    const toCenterY = cy - head.y;
+    const distFromCenter = Math.hypot(toCenterX, toCenterY);
+    const maxRadius = Math.min(window.innerWidth, window.innerHeight) * 0.35;
+    if (distFromCenter > maxRadius) {
+      const targetAngle = Math.atan2(toCenterY, toCenterX);
+      let diff = targetAngle - angle;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      angle += diff * 0.04;
+    }
+
+    head.x += Math.cos(angle) * vel;
+    head.y += Math.sin(angle) * vel;
+
+    // Repaint background fresh each frame (no trail)
+    drawBackground(t);
+
+    // Glowing sparkler head
+    const grad = ctx.createRadialGradient(head.x, head.y, 0, head.x, head.y, 26);
+    grad.addColorStop(0, 'rgba(255, 245, 200, 1)');
+    grad.addColorStop(0.2, 'rgba(255, 220, 130, 0.9)');
+    grad.addColorStop(0.5, 'rgba(255, 170, 60, 0.4)');
+    grad.addColorStop(1, 'rgba(255, 140, 40, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(head.x, head.y, 26, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tiny bright core
+    ctx.fillStyle = 'rgba(255, 255, 240, 1)';
+    ctx.beginPath();
+    ctx.arc(head.x, head.y, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Occasional sparks
+    if (Math.random() < 0.4) {
+      const sparkAngle = angle + (Math.random() - 0.5) * 2;
+      const sparkDist = Math.random() * 6;
+      const sx = head.x + Math.cos(sparkAngle) * sparkDist;
+      const sy = head.y + Math.sin(sparkAngle) * sparkDist;
+      ctx.fillStyle = `rgba(255, ${200 + Math.random() * 55}, ${100 + Math.random() * 80}, 0.9)`;
+      ctx.beginPath();
+      ctx.arc(sx, sy, Math.random() * 1.4 + 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    rafId = requestAnimationFrame(step);
+  }
+
+  function startSnake() {
+    initSnake();
+    running = true;
+    step();
+  }
+  function stopSnake() {
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+  }
+</script>
+</body>
+</html>
